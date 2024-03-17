@@ -4,6 +4,6 @@ namespace AuthDesk.Core.Contracts.Services
 {
 	public interface IJsonImporter
 	{
-		IEnumerable<CodeEntry> OpenJsonAegis(string filePath);
+		object OpenJsonAegis(string filePath, string password);
 	}
 }

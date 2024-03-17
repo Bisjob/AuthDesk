@@ -1,0 +1,77 @@
+﻿[
+  {
+    Id: Guid_1,
+    Name: Mason,
+    Issuer: Deno,
+    Info: {
+      Secrets: 4SJHB4GSD43FZBAI7C2HLRJGPQ,
+      Digits: 6,
+      Period: 30.0
+    }
+  },
+  {
+    Id: Guid_2,
+    Name: James,
+    Issuer: SPDX,
+    Info: {
+      Secrets: 5OM4WOOGPLQEF6UGN3CPEOOLWU,
+      AlgoType: SHA256,
+      Digits: 7,
+      Period: 20.0
+    }
+  },
+  {
+    Id: Guid_3,
+    Name: Elijah,
+    Issuer: Airbnb,
+    Info: {
+      Secrets: 7ELGJSGXNCCTV3O6LKJWYFV2RA,
+      AlgoType: SHA512,
+      Digits: 8,
+      Period: 50.0
+    }
+  },
+  {
+    Id: Guid_4,
+    Name: James,
+    Issuer: Issuu,
+    Type: HOTP,
+    Info: {
+      Secrets: YOOMIXWS5GN6RTBPUFFWKTW5M4,
+      Digits: 6
+    }
+  },
+  {
+    Id: Guid_5,
+    Name: Benjamin,
+    Issuer: Air Canada,
+    Type: HOTP,
+    Info: {
+      Secrets: KUVJJOM753IHTNDSZVCNKL7GII,
+      AlgoType: SHA256,
+      Digits: 7
+    }
+  },
+  {
+    Id: Guid_6,
+    Name: Mason,
+    Issuer: WWE,
+    Type: HOTP,
+    Info: {
+      Secrets: 5VAML3X35THCEBVRLV24CGBKOY,
+      AlgoType: SHA512,
+      Digits: 8
+    }
+  },
+  {
+    Id: Guid_7,
+    Name: Sophia,
+    Issuer: Boeing,
+    Type: Steam,
+    Info: {
+      Secrets: JRZCL47CMXVOQMNPZR2F7J4RGI,
+      Digits: 5,
+      Period: 30.0
+    }
+  }
+]

@@ -24,4 +24,15 @@ public class JsonImporter_OpenJsonAegis
 
         return Verify(result);
     }
+
+    [Fact]
+    public Task AegisEncrypted()
+    {
+        var importer = new JsonImporter();
+        var path = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "aegis_encrypted.json");
+
+        var result = importer.OpenJsonAegis(path, password: "test");
+
+        return Verify(result);
+    }
 }

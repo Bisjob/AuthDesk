@@ -109,7 +109,7 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 	    };
 		if (openFileDialog.ShowDialog() == true)
         {
-            var items = jsonImporter.OpenJsonAegis(openFileDialog.FileName);
+            var items = jsonImporter.OpenJsonAegis(openFileDialog.FileName, password: null);
 			
             foreach (var item in items)
 				codeEntriesService.Entries.Entries.Add(item);
