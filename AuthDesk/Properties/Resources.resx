@@ -168,10 +168,7 @@
   <data name="MainPageImport" xml:space="preserve">
     <value>Import</value>
   </data>
-  <data name="MainPageImportAegis" xml:space="preserve">
-    <value>Aegis crypted</value>
-  </data>
-  <data name="MainPageImportAegisClear" xml:space="preserve">
-    <value>Aegis plain text</value>
+  <data name="MainPageImportAegisJson" xml:space="preserve">
+    <value>Aegis Json</value>
   </data>
 </root>

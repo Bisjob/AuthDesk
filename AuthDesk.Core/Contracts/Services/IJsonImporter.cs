@@ -2,8 +2,16 @@
 
 namespace AuthDesk.Core.Contracts.Services
 {
+    public class AsyncPasswordEventArgs : EventArgs
+    {
+        public string Password { get; set; }
+	}
+
 	public interface IJsonImporter
 	{
-		object OpenJsonAegis(string filePath, string password);
+        public delegate Task AsyncPasswordEventHandler(object sender, AsyncPasswordEventArgs e);
+        public event AsyncPasswordEventHandler OnAskForPassword;
+
+        Task<IEnumerable<CodeEntry>> OpenJsonAegis(string filePath);
 	}
 }

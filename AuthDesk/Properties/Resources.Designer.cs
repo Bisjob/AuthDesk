@@ -88,20 +88,11 @@ namespace AuthDesk.Properties {
         }
         
         /// <summary>
-        ///   Recherche une chaîne localisée semblable à Aegis crypted.
+        ///   Recherche une chaîne localisée semblable à Aegis Json.
         /// </summary>
-        public static string MainPageImportAegis {
+        public static string MainPageImportAegisJson {
             get {
-                return ResourceManager.GetString("MainPageImportAegis", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Recherche une chaîne localisée semblable à Aegis plain text.
-        /// </summary>
-        public static string MainPageImportAegisClear {
-            get {
-                return ResourceManager.GetString("MainPageImportAegisClear", resourceCulture);
+                return ResourceManager.GetString("MainPageImportAegisJson", resourceCulture);
             }
         }
         

@@ -5,7 +5,6 @@ using AuthDesk.Models;
 using AuthDesk.Properties;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
@@ -24,14 +23,10 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 	private ICommand navigateToAddEntryCommand;
 	private ICommand deleteEntryCommand;
 
-	private ICommand importAegisJsonCommand;
-
 	public ICommand NavigateToDetailCommand 
         => navigateToDetailCommand ??= new RelayCommand<CodeEntryContext>(NavigateToDetail);
     public ICommand NavigateToAddEntryCommand
         => navigateToAddEntryCommand ??= new RelayCommand(NavigateToAddEntry);
-    public ICommand ImportAegisJsonCommand
-        => importAegisJsonCommand ??= new RelayCommand(ImportAegisJson);
 	public ICommand DeleteEntryCommand
 		=> deleteEntryCommand ??= new RelayCommand<CodeEntryContext>(DeleteEntry);
 
@@ -51,10 +46,11 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		this.jsonImporter = jsonImporter;
 		this.codeEntriesService = codeEntriesService;
 
+        this.jsonImporter.OnAskForPassword += AskForPassword;
+
         ImportOptions =
         [
-            new SplitButtonCommandItem(Resources.MainPageImportAegis, new RelayCommand(ImportAegis)),
-            new SplitButtonCommandItem(Resources.MainPageImportAegisClear, new RelayCommand(ImportAegisJson))
+            new SplitButtonCommandItem(Resources.MainPageImportAegisJson, new RelayCommand(ImportAegisJson))
         ];
 
         timer = new DispatcherTimer
@@ -97,11 +93,7 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		navigationService.NavigateTo(typeof(AddEntryViewModel).FullName);
 	}
 
-    private async void ImportAegis()
-	{
-        await dialogCoordinator.ShowMessageAsync(this, "Not implemented", "Import an Aegis crypted file is not implemented");
-    }
-    private void ImportAegisJson()
+    private async void ImportAegisJson()
     {
         var openFileDialog = new OpenFileDialog()
         {
@@ -109,12 +101,19 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 	    };
 		if (openFileDialog.ShowDialog() == true)
         {
-            var items = jsonImporter.OpenJsonAegis(openFileDialog.FileName, password: null);
-			
-            foreach (var item in items)
-				codeEntriesService.Entries.Entries.Add(item);
-            codeEntriesService.SaveData();
-            RefreshSource();
+            try
+            {
+                var items = await jsonImporter.OpenJsonAegis(openFileDialog.FileName);
+
+                foreach (var item in items)
+                    codeEntriesService.Entries.Entries.Add(item);
+                codeEntriesService.SaveData();
+                RefreshSource();
+            }
+            catch (Exception ex)
+            {
+                await dialogCoordinator.ShowMessageAsync(this, "Exception", ex.ToString());
+            }
 		}
 	}
 
@@ -125,9 +124,16 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		RefreshSource();
 	}
 
+    private async Task AskForPassword(object sender, AsyncPasswordEventArgs e)
+    {
+        e.Password = await dialogCoordinator.ShowInputAsync(this, "Password required", "The file is protected by a password");
+    }
+
     public void Dispose()
     {
         timer.Tick -= Timer_Tick;
         timer.Stop();
+
+        jsonImporter.OnAskForPassword -= AskForPassword;
     }
 }

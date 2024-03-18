@@ -4,58 +4,44 @@ using AuthDesk.Core.Models;
 using AuthDesk.Core.Models.Aegis;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static AuthDesk.Core.Contracts.Services.IJsonImporter;
 
 namespace AuthDesk.Core.Services
 {
 	public class JsonImporter : IJsonImporter
-	{
-		public JsonImporter() 
+    {
+        public event AsyncPasswordEventHandler OnAskForPassword;
+        public JsonImporter() 
 		{
 		}
 
-		private AegisDb handleEncryptedDb(AegisJsonStructure file, string password)
-		{
-			var slot = file.Header.Slots[0];  // Caveat: This doesn't support multiple slots.
-			var slotKey = AegisCrypto.DeriveKey(
-					password: password,
-					salt: slot.Salt,
-					n: slot.N,
-					r: slot.R,
-					p: slot.P
-			);
-			var masterKey = AegisCrypto.Decrypt(
-					ciphertext: slot.Key,
-					key: slotKey,
-					nonce: slot.KeyParams.Nonce,
-					tag: slot.KeyParams.Tag
-			);
-
-			var dbEncrypted = Convert.FromBase64String((string) file.Db);
-			var dbPlain = AegisCrypto.Decrypt(
-					ciphertext: dbEncrypted,
-					key: masterKey,
-					nonce: file.Header.Params.Nonce,
-					tag: file.Header.Params.Tag
-			);
-			string dbString = System.Text.Encoding.UTF8.GetString(dbPlain);
-			return JsonConvert.DeserializeObject<AegisDb>(dbString);
-		}
-
-		public object OpenJsonAegis(string filePath, string password)
+		public async Task<IEnumerable<CodeEntry>> OpenJsonAegis(string filePath)
 		{
 			if (!File.Exists(filePath))
-				return null;
+				return [];
 
 			var json = File.ReadAllText(filePath);
 			var temp = JsonConvert.DeserializeObject<AegisJsonStructure>(json);
 			AegisDb db = null;
 
-			if (temp.Db is string) {
+			if (temp.Db is string)
+			{
 				// `db` is encrypted.
-				db = handleEncryptedDb(temp, password: password);
-			} else {
+				var handler = OnAskForPassword;
+				if (handler == null)
+                    return [];
+
+                var passwordArgs = new AsyncPasswordEventArgs();
+				await OnAskForPassword?.Invoke(this, passwordArgs);
+				if (string.IsNullOrEmpty(passwordArgs.Password))
+                    return [];
+
+                db = HandleEncryptedDb(temp, passwordArgs.Password);
+			}
+			else
+			{
 				// `db` is in plain text.
-				db = (AegisDb) ((JObject) temp.Db).ToObject(typeof(AegisDb));
+				db = (AegisDb)((JObject)temp.Db).ToObject(typeof(AegisDb));
 			}
 
 			return db.Entries.Select(e => new CodeEntry
@@ -75,6 +61,35 @@ namespace AuthDesk.Core.Services
 					Period = e.Info?.Period ?? 0,
 				}
 			});
-		}
-	}
+        }
+
+
+        private AegisDb HandleEncryptedDb(AegisJsonStructure file, string password)
+        {
+            var slot = file.Header.Slots[0];  // Caveat: This doesn't support multiple slots.
+            var slotKey = AegisCrypto.DeriveKey(
+                    password: password,
+                    salt: slot.Salt,
+                    n: slot.N,
+                    r: slot.R,
+                    p: slot.P
+            );
+            var masterKey = AegisCrypto.Decrypt(
+                    ciphertext: slot.Key,
+                    key: slotKey,
+                    nonce: slot.KeyParams.Nonce,
+                    tag: slot.KeyParams.Tag
+            );
+
+            var dbEncrypted = Convert.FromBase64String((string)file.Db);
+            var dbPlain = AegisCrypto.Decrypt(
+                    ciphertext: dbEncrypted,
+                    key: masterKey,
+                    nonce: file.Header.Params.Nonce,
+                    tag: file.Header.Params.Tag
+            );
+            string dbString = System.Text.Encoding.UTF8.GetString(dbPlain);
+            return JsonConvert.DeserializeObject<AegisDb>(dbString);
+        }
+    }
 }
