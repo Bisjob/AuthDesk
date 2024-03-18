@@ -11,9 +11,9 @@ ToDo list :
 - Favorite feature
 - Adapt the generate frequency to the entry. (Today is each 30 seconds)
 - Adapt the algorithm (Today only TOTP and SHA1. It generate a 6 digit code) 
-- Encrypt the local data
+- ~~Encrypt the local data~~
 - Generate / Use image for each entry (Blue round circle now)
-- Import Aegis encrypted export
+- ~~Import Aegis encrypted export~~
 - Import data from other 2FA app
 - Filters / Sort the entries
 - ...
