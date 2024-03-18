@@ -1,9 +1,47 @@
-﻿namespace AuthDesk.Core.Models.Aegis
+﻿using Newtonsoft.Json;
+
+namespace AuthDesk.Core.Models.Aegis
 {
 	// Temporary structure to help with deserialization
 	public class AegisJsonStructure
 	{
-		public AegisDb Db { get; set; }
+		public AegisHeader Header { get; set; }
+		public object Db { get; set; }
+	}
+
+	public class AegisHeader
+	{
+		public List<AegisSlot> Slots { get; set; }
+		public AegisParams Params { get; set; }
+	}
+
+	public class AegisSlot
+	{
+		public int Type { get; set; }
+		public string Uuid { get; set; }
+
+		[JsonConverter(typeof(HexConverter))]
+		public byte[] Key { get; set; }
+
+		[JsonProperty("key_params")]
+		public AegisParams KeyParams { get; set; }
+		public int N { get; set; }
+		public int R { get; set; }
+		public int P { get; set; }
+
+		[JsonConverter(typeof(HexConverter))]
+		public byte[] Salt { get; set; }
+
+		public string Repaired { get; set; }
+	}
+
+	public class AegisParams
+	{
+		[JsonConverter(typeof(HexConverter))]
+		public byte[] Nonce { get; set; }
+
+		[JsonConverter(typeof(HexConverter))]
+		public byte[] Tag { get; set; }
 	}
 
 	public class AegisDb
