@@ -5,34 +5,37 @@ namespace AuthDesk.Core.Tests;
 public class JsonImporter_OpenJsonAegis
 {
     [Fact]
-    public void FileNotFound()
+    public async Task FileNotFound()
     {
         var importer = new JsonImporter();
 
-        var result = importer.OpenJsonAegis("non-existing", password: null);
+        var result = await importer.OpenJsonAegis("non-existing");
 
-        Assert.Null(result);
+        Assert.Empty(result);
     }
 
     [Fact]
-    public Task AegisPlain()
+    public async Task AegisPlain()
     {
         var importer = new JsonImporter();
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "aegis_plain.json");
 
-        var result = importer.OpenJsonAegis(path, password: null);
+        var result = await importer.OpenJsonAegis(path);
 
-        return Verify(result);
+        await Verify(result);
     }
 
     [Fact]
-    public Task AegisEncrypted()
+    public async Task AegisEncrypted()
     {
         var importer = new JsonImporter();
+
+        importer.OnAskForPassword += (obj, e) => { e.Password = "test"; return Task.CompletedTask; };
+
         var path = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "aegis_encrypted.json");
 
-        var result = importer.OpenJsonAegis(path, password: "test");
+        var result = await importer.OpenJsonAegis(path);
 
-        return Verify(result);
+        await Verify(result);
     }
 }

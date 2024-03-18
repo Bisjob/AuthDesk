@@ -9,7 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthDesk", "AuthDesk\AuthDe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthDesk.Core", "AuthDesk.Core\AuthDesk.Core.csproj", "{86E7B01C-0A2C-4B4F-90CD-FE2B79536EED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthDesk.Core.Tests", "AuthDesk.Core.Tests\AuthDesk.Core.Tests.csproj", "{CB9AEDAD-CDD5-4117-8F2D-928ED0B190FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthDesk.Core.Tests", "AuthDesk.Core.Tests\AuthDesk.Core.Tests.csproj", "{CB9AEDAD-CDD5-4117-8F2D-928ED0B190FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{5CA227C8-BDD5-4FE8-A9E6-6D8ED78D9F13}"
+	ProjectSection(SolutionItems) = preProject
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
