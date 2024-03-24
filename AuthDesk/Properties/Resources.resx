@@ -175,4 +175,13 @@
   <data name="icon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\icon.ico;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="DialogConfirmNoButton" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="DialogConfirmYesButton" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="EntryCtxDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
 </root>

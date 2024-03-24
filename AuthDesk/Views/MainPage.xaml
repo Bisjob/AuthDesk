@@ -1,44 +1,61 @@
-﻿<Page
-    x:Class="AuthDesk.Views.MainPage"
-    Style="{DynamicResource MahApps.Styles.Page}"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
-    xmlns:converters="clr-namespace:AuthDesk.Converters"
-    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:properties="clr-namespace:AuthDesk.Properties"
-    xmlns:behaviors="clr-namespace:AuthDesk.Behaviors"
-    xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
-    mc:Ignorable="d"
-    d:DesignHeight="700" d:DesignWidth="600"
-    Dialog:DialogParticipation.Register="{Binding}">
+﻿<Page x:Class="AuthDesk.Views.MainPage"
+      Style="{DynamicResource MahApps.Styles.Page}"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+      xmlns:converters="clr-namespace:AuthDesk.Converters"
+      xmlns:uc="clr-namespace:AuthDesk.UserControls"
+      xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+      xmlns:properties="clr-namespace:AuthDesk.Properties"
+      xmlns:behaviors="clr-namespace:AuthDesk.Behaviors"
+      xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+      mc:Ignorable="d"
+      d:DesignHeight="700"
+      d:DesignWidth="600"
+      Dialog:DialogParticipation.Register="{Binding}">
     <Page.Resources>
         <converters:NumberFormatConverter x:Key="NumberFormatConverter" />
-        <DataTemplate x:Key="contentGridItemTemplate">
-            <Grid
-                Height="100"
-                Background="{DynamicResource MahApps.Brushes.Gray10}"
-                HorizontalAlignment="Stretch">
-                <DockPanel HorizontalAlignment="Stretch" 
-                            VerticalAlignment="Center"
-                           LastChildFill="True"
-                            Margin="{StaticResource SmallLeftTopRightBottomMargin}">
+        <converters:NullToBooleanConverter x:Key="NullToBooleanConverter" />
 
-                    <Ellipse DockPanel.Dock="Left" 
-                             Width="40px" Height="40px" Fill="{StaticResource MahApps.Brushes.Gray}" 
+        <DataTemplate x:Key="contentGridItemTemplate">
+            <Grid Height="100"
+                  HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="12" />
+                    <RowDefinition  />
+                </Grid.RowDefinitions>
+
+                <uc:DateTimeProgressBar Grid.Row="0"
+                                        LastExecutedDate="{Binding CodeLastExecuted}"
+                                        Margin="{StaticResource XXSmallLeftTopRightBottomMargin}"
+                                        TickInterval="{Binding CodeInterval}" />
+
+                <DockPanel Grid.Row="1"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Center"
+                           LastChildFill="True"
+                           Margin="{StaticResource SmallLeftTopRightBottomMargin}">
+
+                    <Ellipse DockPanel.Dock="Left"
+                             Width="40px"
+                             Height="40px"
+                             Fill="{StaticResource MahApps.Brushes.Gray}"
                              Margin="{StaticResource SmallRightMargin}" />
 
-                    <TextBlock DockPanel.Dock="Right"
-                               Margin="{StaticResource MediumRightMargin}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Style="{StaticResource ListSubTitleStyle}"
-                               Text="{Binding Entry.Group}" />
+                    <Border DockPanel.Dock="Right"
+                            Margin="{StaticResource MediumRightMargin}"
+                            Style="{StaticResource BadgeBorder}">
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Style="{StaticResource BadgeStyle}"
+                                   Text="{Binding Entry.Group}" />
+                    </Border>
+                    
 
                     <DockPanel LastChildFill="True">
-                        <StackPanel Orientation="Horizontal" 
+                        <StackPanel Orientation="Horizontal"
                                     VerticalAlignment="Stretch"
                                     HorizontalAlignment="Stretch"
                                     DockPanel.Dock="Top">
@@ -53,19 +70,20 @@
                                        HorizontalAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" 
-                                    VerticalAlignment="Stretch" 
+                        <StackPanel Orientation="Horizontal"
+                                    VerticalAlignment="Stretch"
                                     HorizontalAlignment="Stretch">
 
-                            <TextBlock FontSize="30" 
+                            <TextBlock FontSize="30"
                                        Foreground="{StaticResource MahApps.Brushes.Accent}"
                                        Text="{Binding Code, Converter={StaticResource NumberFormatConverter}}"
                                        HorizontalAlignment="Left" />
 
-                            <Button Content="{Binding CopyCodebuttonText}" 
+                            <Button Content="{Binding CopyCodebuttonText}"
                                     Command="{Binding CopyCodeCommand}"
                                     Margin="{StaticResource SmallLeftMargin}"
-                                    Width="50px" Height="30"/>
+                                    Width="50px"
+                                    Height="30" />
                         </StackPanel>
                     </DockPanel>
 
@@ -74,29 +92,81 @@
         </DataTemplate>
 
         <DataTemplate x:Key="DetailTemplate">
-            <ScrollViewer
-                Name="ForegroundElement"
-                IsTabStop="True"
-                HorizontalAlignment="Stretch">
-                <StackPanel HorizontalAlignment="Left" Margin="{StaticResource MediumLeftTopRightBottomMargin}">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
-                        <TextBlock
-                            Text="{Binding Entry.Name}"
-                            AutomationProperties.Name="Detail icon" />
+            <ScrollViewer IsTabStop="True"
+                          HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="132" />
+                        <RowDefinition />
+                        <RowDefinition Height="38" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="145" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
 
+                    <Ellipse Grid.Row="0"
+                             Grid.Column="0"
+                             Width="120px"
+                             Height="120px"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Center"
+                             Fill="{StaticResource MahApps.Brushes.Gray}"/>
 
-                        <Button DockPanel.Dock="Right" 
-                            Height="25" Width="25"
+                    <StackPanel Grid.Row="0" Grid.Column="1"
+                                HorizontalAlignment="Stretch">
+                        <TextBlock Text="{Binding Entry.Issuer}"
+                                   FontSize="32"
+                                   Style="{StaticResource ListTitleStyle}" />
+
+                        <TextBlock Text="{Binding Entry.Name}"
+                                   FontSize="18"
+                                   Margin="{StaticResource XXSmallTopMargin}"
+                                   Style="{StaticResource BodyTextStyle}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Margin="{StaticResource MediumLeftTopRightBottomMargin}">
+
+                        <DockPanel>
+                            <TextBlock FontSize="40"
+                                       Foreground="{StaticResource MahApps.Brushes.Accent}"
+                                       Margin="{StaticResource MediumLeftMargin}"
+                                       Text="{Binding Code, Converter={StaticResource NumberFormatConverter}}"
+                                       HorizontalAlignment="Left" />
+
+                            <uc:DateTimeProgressBar LastExecutedDate="{Binding CodeLastExecuted}"
+                                                    TickInterval="{Binding CodeInterval}"
+                                                    Margin="{StaticResource MediumLeftMargin}"
+                                                    Height="10" />
+                        </DockPanel>
+                    </StackPanel>
+                    
+
+                    <Button Grid.Row="2"
+                            Grid.ColumnSpan="2"
+                            HorizontalAlignment="Right"
+                            Style="{DynamicResource MahApps.Styles.Button.Square}"
                             Command="{Binding RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}, Path=DataContext.DeleteEntryCommand }"
                             CommandParameter="{Binding .}">
-                            <Canvas Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <Canvas Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center">
                                 <Path Data="M1,1 L9,9 M9,1 L1,9"
-                                  Stroke="Red" StrokeThickness="2"
-                                  Canvas.Left="3" Canvas.Top="3"/>
+                                      Stroke="Red"
+                                      StrokeThickness="2"
+                                      Canvas.Left="3"
+                                      Canvas.Top="3" />
                             </Canvas>
-                        </Button>
-                    </StackPanel>
-                </StackPanel>
+                            <Label Content="{x:Static properties:Resources.EntryCtxDelete}"
+                                   VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                
+                
             </ScrollViewer>
         </DataTemplate>
     </Page.Resources>
@@ -107,16 +177,22 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <Button Command="{Binding NavigateToAddEntryCommand}" 
+            <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal">
+                <Button Command="{Binding NavigateToAddEntryCommand}"
                         Style="{DynamicResource MahApps.Styles.Button.Square}">
                     <StackPanel Orientation="Horizontal">
-                        <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                        <Canvas Width="16"
+                                Height="16"
+                                VerticalAlignment="Center">
                             <Path Data="M8,1 V15 M1,8 H15"
-                                  Stroke="Green" StrokeThickness="2"
-                                  Canvas.Left="0" Canvas.Top="0"/>
+                                  Stroke="Green"
+                                  StrokeThickness="2"
+                                  Canvas.Left="0"
+                                  Canvas.Top="0" />
                         </Canvas>
-                        <Label Content="{x:Static properties:Resources.MainPageAddNew}" VerticalAlignment="Center" />
+                        <Label Content="{x:Static properties:Resources.MainPageAddNew}"
+                               VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <!--<Button Command="{Binding ImportAegisJsonCommand}" Margin="{StaticResource XXSmallTopBottomMargin}">
@@ -130,85 +206,132 @@
                     </StackPanel>
                 </Button>-->
 
-                <controls:DropDownButton   
-                    ItemsSource="{Binding ImportOptions}">
-                    <controls:DropDownButton.ItemTemplate>
+                <mah:DropDownButton ItemsSource="{Binding ImportOptions}">
+                    <mah:DropDownButton.ItemTemplate>
                         <DataTemplate>
-                            <Button Content="{Binding Name}" Command="{Binding Command}" Style="{DynamicResource MahApps.Styles.Button.Square}" />
+                            <Button Content="{Binding Name}"
+                                    Command="{Binding Command}"
+                                    Style="{DynamicResource MahApps.Styles.Button.Square}" />
                         </DataTemplate>
-                    </controls:DropDownButton.ItemTemplate>
-                    <controls:DropDownButton.Content>
+                    </mah:DropDownButton.ItemTemplate>
+                    <mah:DropDownButton.Content>
                         <StackPanel Orientation="Horizontal">
-                            <Canvas Width="16" Height="16" VerticalAlignment="Center">
+                            <Canvas Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center">
                                 <Path Data="M8,1 V15 M1,8 H15"
-                                      Stroke="Green" StrokeThickness="2"
-                                      Canvas.Left="0" Canvas.Top="0"/>
+                                      Stroke="Green"
+                                      StrokeThickness="2"
+                                      Canvas.Left="0"
+                                      Canvas.Top="0" />
                             </Canvas>
-                            <Label Content="{x:Static properties:Resources.MainPageImport}" VerticalAlignment="Center" />
+                            <Label Content="{x:Static properties:Resources.MainPageImport}"
+                                   VerticalAlignment="Center" />
                         </StackPanel>
-                    </controls:DropDownButton.Content>
-                </controls:DropDownButton>
+                    </mah:DropDownButton.Content>
+                </mah:DropDownButton>
 
             </StackPanel>
 
-            <TextBlock
-                Style="{StaticResource PageTitleStyle}"
-                Margin="{StaticResource MediumLeftMargin}"
-                Text="{x:Static properties:Resources.MainPageTitle}" />
+            <TextBlock Style="{StaticResource PageTitleStyle}"
+                       Margin="{StaticResource MediumLeftMargin}"
+                       Text="{x:Static properties:Resources.MainPageTitle}" />
 
         </DockPanel>
 
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="46" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="300" Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <DockPanel Grid.Row="0" LastChildFill="False" Margin="{StaticResource XSmallLeftTopRightBottomMargin}">
-                <TextBox DockPanel.Dock="Left" Width="100" 
+        <DockPanel Grid.Row="1">
+            
+            <!-- Filters -->
+            <DockPanel DockPanel.Dock="Top"
+                       LastChildFill="False"
+                       Margin="{StaticResource XSmallLeftTopRightBottomMargin}">
+                <TextBox DockPanel.Dock="Left"
+                         Width="100"
                          ToolTip="Filter by email"
                          HorizontalContentAlignment="Stretch"
                          VerticalContentAlignment="Center"
-                         controls:TextBoxHelper.ClearTextButton="True"
-                         controls:TextBoxHelper.Watermark="Email..."
-                         controls:TextBoxHelper.WatermarkAlignment="Left"
-                         Text="{Binding Path=FilterName, UpdateSourceTrigger=PropertyChanged}"/>
+                         mah:TextBoxHelper.ClearTextButton="True"
+                         mah:TextBoxHelper.Watermark="Email..."
+                         mah:TextBoxHelper.WatermarkAlignment="Left"
+                         Text="{Binding Path=FilterName, UpdateSourceTrigger=PropertyChanged}" />
 
-                <controls:DropDownButton DockPanel.Dock="Left" Width="150" 
-                                         HorizontalContentAlignment="Stretch"
-                                         VerticalContentAlignment="Center"
-                                         Margin="{StaticResource XSmallLeftMargin}"
-                                         Content="{Binding SelectedGroup}"
-                                         ItemsSource="{Binding Groups}">
-                    <controls:DropDownButton.ItemContainerStyle>
-                        <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-                            <Setter Property="Command" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:DropDownButton}}, Path=DataContext.SetGroupFilterCommand}" />
-                            <Setter Property="CommandParameter" Value="{Binding .}" />
+                <mah:DropDownButton DockPanel.Dock="Left"
+                                    Width="150"
+                                    HorizontalContentAlignment="Stretch"
+                                    VerticalContentAlignment="Center"
+                                    Margin="{StaticResource XSmallLeftMargin}"
+                                    Content="{Binding SelectedGroup}"
+                                    ItemsSource="{Binding Groups}">
+                    <mah:DropDownButton.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource {x:Type MenuItem}}"
+                               TargetType="{x:Type MenuItem}">
+                            <Setter Property="Command"
+                                    Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type mah:DropDownButton}}, Path=DataContext.SetGroupFilterCommand}" />
+                            <Setter Property="CommandParameter"
+                                    Value="{Binding .}" />
                         </Style>
-                    </controls:DropDownButton.ItemContainerStyle>
-                </controls:DropDownButton>
-
+                    </mah:DropDownButton.ItemContainerStyle>
+                </mah:DropDownButton>
             </DockPanel>
-            <ListView Grid.Row="1" Grid.Column="0"
-                      Margin="{StaticResource SmallLeftMargin}"
-                      SelectionMode="Single"
-                      ItemsSource="{Binding AllEntries}"
-                      Style="{StaticResource ContentGridListViewStyle}"
-                      ItemTemplate="{StaticResource contentGridItemTemplate}"
-                      SelectedItem="{Binding SelectedEntryCtx}">
-                <i:Interaction.Behaviors>
-                    <behaviors:ListViewItemSelectionBehavior Command="{Binding NavigateToDetailCommand}" />
-                </i:Interaction.Behaviors>
-            </ListView>
 
-            <ContentControl Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
-                            IsTabStop="False"
-                            Content="{Binding SelectedEntryCtx}"
-                            ContentTemplate="{StaticResource DetailTemplate}" />
-        </Grid>
+            <mah:SplitView DisplayMode="Overlay"
+                           IsPaneOpen="{Binding SelectedEntryCtx, Converter={StaticResource NullToBooleanConverter}}"
+                           PanePlacement="Right"
+                           HorizontalAlignment="Stretch"
+                           HorizontalContentAlignment="Stretch"
+                           CanResizeOpenPane="true"
+                           OpenPaneLength="500"
+                           PaneClosed="SplitView_PaneClosed"
+                           PaneBackground="{StaticResource MahApps.Brushes.Control.Background}">
+                <mah:SplitView.Pane>
+                    <Border HorizontalAlignment="Stretch"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource MahApps.Brushes.Control.Border}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="26" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <DockPanel Grid.Row="0"
+                                       LastChildFill="False">
+                                <Button DockPanel.Dock="Left"
+                                        Height="25"
+                                        Width="25"
+                                        Style="{DynamicResource MahApps.Styles.Button.Circle}"
+                                        Command="{Binding RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}, Path=DataContext.UnselectEntryCommand}">
+                                    <Canvas Width="16"
+                                            Height="16"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center">
+                                        <Path Data="M1,1 L9,9 M9,1 L1,9"
+                                              Stroke="{StaticResource MahApps.Brushes.Badged.Foreground}"
+                                              StrokeThickness="2"
+                                              Canvas.Left="3"
+                                              Canvas.Top="3" />
+                                    </Canvas>
+                                </Button>
+                            </DockPanel>
+                            <ContentControl Grid.Row="1"
+                                            IsTabStop="False"
+                                            Content="{Binding SelectedEntryCtx}"
+                                            ContentTemplate="{StaticResource DetailTemplate}" />
+                        </Grid>
+                    </Border>
+                </mah:SplitView.Pane>
+
+                <ListView Margin="{StaticResource SmallLeftMargin}"
+                          SelectionMode="Single"
+                          ItemsSource="{Binding AllEntries}"
+                          Style="{StaticResource ContentGridListViewStyle}"
+                          ItemTemplate="{StaticResource contentGridItemTemplate}"
+                          SelectedItem="{Binding SelectedEntryCtx}">
+                    <i:Interaction.Behaviors>
+                        <behaviors:ListViewItemSelectionBehavior Command="{Binding NavigateToDetailCommand}" />
+                    </i:Interaction.Behaviors>
+                </ListView>
+
+            </mah:SplitView>
+        </DockPanel>
+
     </Grid>
 </Page>

@@ -70,6 +70,33 @@ namespace AuthDesk.Properties {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à No.
+        /// </summary>
+        public static string DialogConfirmNoButton {
+            get {
+                return ResourceManager.GetString("DialogConfirmNoButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Yes.
+        /// </summary>
+        public static string DialogConfirmYesButton {
+            get {
+                return ResourceManager.GetString("DialogConfirmYesButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Delete.
+        /// </summary>
+        public static string EntryCtxDelete {
+            get {
+                return ResourceManager.GetString("EntryCtxDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une ressource localisée de type System.Byte[].
         /// </summary>
         public static byte[] icon {

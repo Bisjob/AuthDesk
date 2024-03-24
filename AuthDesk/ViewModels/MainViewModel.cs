@@ -25,6 +25,7 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 	private ICommand navigateToAddEntryCommand;
 	private ICommand deleteEntryCommand;
     private ICommand setGroupFilterCommand;
+    private ICommand unselectEntryCommand;
 
     public ICommand NavigateToAddEntryCommand
         => navigateToAddEntryCommand ??= new RelayCommand(NavigateToAddEntry);
@@ -32,6 +33,8 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		=> deleteEntryCommand ??= new RelayCommand<CodeEntryContext>(DeleteEntry);
     public ICommand SetGroupFilterCommand
         => setGroupFilterCommand ??= new RelayCommand<string>(SetGroupFilter);
+    public ICommand UnselectEntryCommand
+        => unselectEntryCommand ??= new RelayCommand(UnSelectEntry);
 
     public ObservableCollection<CodeEntryContext> Entries { get; } = [];
     public ICollectionView AllEntries => allEntries.View;
@@ -75,8 +78,6 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
     private string selectedGroup = SelectedGroupEmpty;
     private const string SelectedGroupEmpty = "Filter by group..";
 
-    private readonly DispatcherTimer timer;
-
 	public MainViewModel(
         INavigationService navigationService,
         IJsonImporter jsonImporter,
@@ -99,13 +100,6 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
         [
             new SplitButtonCommandItem(Resources.MainPageImportAegisJson, new RelayCommand(ImportAegisJson))
         ];
-
-        timer = new DispatcherTimer
-		{
-			Interval = TimeSpan.FromSeconds(30)
-		};
-		timer.Tick += Timer_Tick;
-		timer.Start();
 	}
 
     public void OnNavigatedTo(object parameter)
@@ -115,13 +109,6 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 
     public void OnNavigatedFrom()
     {
-	}
-	private void Timer_Tick(object sender, EventArgs e)
-	{
-		foreach (var entry in Entries)
-		{
-			entry.GenerateNewCode();
-		}
 	}
 
 	private void RefreshSource()
@@ -163,6 +150,10 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
     {
         SelectedGroup = group;
     }
+    private void UnSelectEntry()
+    {
+        SelectedEntryCtx = null;
+    }
 
     private void NavigateToAddEntry()
 	{
@@ -193,9 +184,22 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		}
 	}
 
-	private void DeleteEntry(CodeEntryContext entry)
+	private async void DeleteEntry(CodeEntryContext ctx)
 	{
-		codeEntriesService.Entries.Entries.Remove(entry.Entry);
+        var result = await dialogCoordinator.ShowMessageAsync(
+            this, 
+            "Confirm delete", 
+            $"Are you sur you want to delete the entry {ctx.Entry.Issuer}", 
+            MessageDialogStyle.AffirmativeAndNegative,
+            new MetroDialogSettings()
+            {
+                AffirmativeButtonText = Resources.DialogConfirmYesButton,
+                NegativeButtonText = Resources.DialogConfirmNoButton,
+            });
+
+        if (result != MessageDialogResult.Affirmative) return;
+
+        codeEntriesService.Entries.Entries.Remove(ctx.Entry);
 		codeEntriesService.SaveData();
 		RefreshSource();
 	}
@@ -207,9 +211,6 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 
     public void Dispose()
     {
-        timer.Tick -= Timer_Tick;
-        timer.Stop();
-
         jsonImporter.OnAskForPassword -= AskForPassword;
     }
 }
