@@ -30,25 +30,13 @@
                              Width="40px" Height="40px" Fill="{StaticResource MahApps.Brushes.Gray}" 
                              Margin="{StaticResource SmallRightMargin}" />
 
-
-                    <Button DockPanel.Dock="Right" 
-                            Height="25" Width="25"
-                            Command="{Binding RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}, Path=DataContext.DeleteEntryCommand }"
-                            CommandParameter="{Binding .}">
-                        <Canvas Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <Path Data="M1,1 L9,9 M9,1 L1,9"
-                                  Stroke="Red" StrokeThickness="2"
-                                  Canvas.Left="3" Canvas.Top="3"/>
-                        </Canvas>
-                    </Button>
-
                     <TextBlock DockPanel.Dock="Right"
                                Margin="{StaticResource MediumRightMargin}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                Style="{StaticResource ListSubTitleStyle}"
                                Text="{Binding Entry.Group}" />
-                    
+
                     <DockPanel LastChildFill="True">
                         <StackPanel Orientation="Horizontal" 
                                     VerticalAlignment="Stretch"
@@ -84,12 +72,38 @@
                 </DockPanel>
             </Grid>
         </DataTemplate>
+
+        <DataTemplate x:Key="DetailTemplate">
+            <ScrollViewer
+                Name="ForegroundElement"
+                IsTabStop="True"
+                HorizontalAlignment="Stretch">
+                <StackPanel HorizontalAlignment="Left" Margin="{StaticResource MediumLeftTopRightBottomMargin}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch">
+                        <TextBlock
+                            Text="{Binding Entry.Name}"
+                            AutomationProperties.Name="Detail icon" />
+
+
+                        <Button DockPanel.Dock="Right" 
+                            Height="25" Width="25"
+                            Command="{Binding RelativeSource={RelativeSource AncestorType=Page, Mode=FindAncestor}, Path=DataContext.DeleteEntryCommand }"
+                            CommandParameter="{Binding .}">
+                            <Canvas Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Path Data="M1,1 L9,9 M9,1 L1,9"
+                                  Stroke="Red" StrokeThickness="2"
+                                  Canvas.Left="3" Canvas.Top="3"/>
+                            </Canvas>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </DataTemplate>
     </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
-            <RowDefinition Height="32" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel Grid.Row="0">
@@ -100,7 +114,7 @@
                         <Canvas Width="16" Height="16" VerticalAlignment="Center">
                             <Path Data="M8,1 V15 M1,8 H15"
                                   Stroke="Green" StrokeThickness="2"
-                                  Canvas.Left="0" Canvas.Top="0"/>  
+                                  Canvas.Left="0" Canvas.Top="0"/>
                         </Canvas>
                         <Label Content="{x:Static properties:Resources.MainPageAddNew}" VerticalAlignment="Center" />
                     </StackPanel>
@@ -143,18 +157,58 @@
                 Text="{x:Static properties:Resources.MainPageTitle}" />
 
         </DockPanel>
-        <DockPanel Grid.Row="1">
-            
-        </DockPanel>
-        <ListView Grid.Row="2"
-            Margin="{StaticResource SmallLeftMargin}"
-            SelectionMode="Single"
-            ItemsSource="{Binding Source}"
-            Style="{StaticResource ContentGridListViewStyle}"
-            ItemTemplate="{StaticResource contentGridItemTemplate}">
-            <i:Interaction.Behaviors>
-                <behaviors:ListViewItemSelectionBehavior Command="{Binding NavigateToDetailCommand}" />
-            </i:Interaction.Behaviors>
-        </ListView>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="46" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="300" Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Row="0" LastChildFill="False" Margin="{StaticResource XSmallLeftTopRightBottomMargin}">
+                <TextBox DockPanel.Dock="Left" Width="100" 
+                         ToolTip="Filter by email"
+                         HorizontalContentAlignment="Stretch"
+                         VerticalContentAlignment="Center"
+                         controls:TextBoxHelper.ClearTextButton="True"
+                         controls:TextBoxHelper.Watermark="Email..."
+                         controls:TextBoxHelper.WatermarkAlignment="Left"
+                         Text="{Binding Path=FilterName, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <controls:DropDownButton DockPanel.Dock="Left" Width="150" 
+                                         HorizontalContentAlignment="Stretch"
+                                         VerticalContentAlignment="Center"
+                                         Margin="{StaticResource XSmallLeftMargin}"
+                                         Content="{Binding SelectedGroup}"
+                                         ItemsSource="{Binding Groups}">
+                    <controls:DropDownButton.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+                            <Setter Property="Command" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type controls:DropDownButton}}, Path=DataContext.SetGroupFilterCommand}" />
+                            <Setter Property="CommandParameter" Value="{Binding .}" />
+                        </Style>
+                    </controls:DropDownButton.ItemContainerStyle>
+                </controls:DropDownButton>
+
+            </DockPanel>
+            <ListView Grid.Row="1" Grid.Column="0"
+                      Margin="{StaticResource SmallLeftMargin}"
+                      SelectionMode="Single"
+                      ItemsSource="{Binding AllEntries}"
+                      Style="{StaticResource ContentGridListViewStyle}"
+                      ItemTemplate="{StaticResource contentGridItemTemplate}"
+                      SelectedItem="{Binding SelectedEntryCtx}">
+                <i:Interaction.Behaviors>
+                    <behaviors:ListViewItemSelectionBehavior Command="{Binding NavigateToDetailCommand}" />
+                </i:Interaction.Behaviors>
+            </ListView>
+
+            <ContentControl Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
+                            IsTabStop="False"
+                            Content="{Binding SelectedEntryCtx}"
+                            ContentTemplate="{StaticResource DetailTemplate}" />
+        </Grid>
     </Grid>
 </Page>

@@ -81,9 +81,6 @@ public partial class App : Application
         services.AddTransient<MainViewModel>();
         services.AddTransient<MainPage>();
 
-        services.AddTransient<MainDetailViewModel>();
-        services.AddTransient<MainDetailPage>();
-
 		services.AddTransient<AddEntryViewModel>();
 		services.AddTransient<AddEntryPage>();
 
