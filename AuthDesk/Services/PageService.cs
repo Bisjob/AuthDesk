@@ -17,7 +17,6 @@ public class PageService : IPageService
     {
         _serviceProvider = serviceProvider;
         Configure<MainViewModel, MainPage>();
-        Configure<MainDetailViewModel, MainDetailPage>();
 		Configure<AddEntryViewModel, AddEntryPage>();
 		Configure<SettingsViewModel, SettingsPage>();
     }
