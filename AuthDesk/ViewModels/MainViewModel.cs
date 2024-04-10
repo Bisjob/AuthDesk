@@ -9,10 +9,8 @@ using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Text.RegularExpressions;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace AuthDesk.ViewModels;
 
