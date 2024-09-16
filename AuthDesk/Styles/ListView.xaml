@@ -16,12 +16,19 @@
                 <ControlTemplate TargetType="{x:Type ListViewItem}">
                     <Border
                         x:Name="itemBorder"
+                            Background="{DynamicResource MahApps.Brushes.Gray10}"
                         BorderThickness="{TemplateBinding BorderThickness}">
                         <ContentPresenter />
                     </Border>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true">
                             <Setter Property="BorderBrush" TargetName="itemBorder" Value="{DynamicResource MahApps.Brushes.Accent3}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}"
+                                     Value="true">
+                            <Setter Property="Background"
+                                    TargetName="itemBorder"
+                                    Value="{DynamicResource MahApps.Brushes.DataGrid.Selection.Background}" />
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -57,8 +64,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <ScrollViewer Focusable="false" Padding="{TemplateBinding Padding}" HorizontalScrollBarVisibility="Disabled">
-                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" Margin="0" />
+                    <ScrollViewer Focusable="false"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                        Margin="0" />
                     </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>

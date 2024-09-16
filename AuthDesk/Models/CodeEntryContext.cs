@@ -1,5 +1,4 @@
-﻿using AuthDesk.Contracts.Services;
-using AuthDesk.Core.Models;
+﻿using AuthDesk.Core.Models;
 using AuthDesk.Core.Tools;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +8,7 @@ using System.Windows.Threading;
 
 namespace AuthDesk.Models
 {
-	public class CodeEntryContext : ObservableObject
+    public class CodeEntryContext : ObservableObject, IDisposable
 	{
 		public CodeEntry Entry { get; }
 
@@ -37,18 +36,40 @@ namespace AuthDesk.Models
 			}
 		}
 
-		private ICommand copyCodeCommand;
+		public TimeSpan CodeInterval { get; }
+		
+
+        private ICommand copyCodeCommand;
 		public ICommand CopyCodeCommand
 		=> copyCodeCommand ??= new RelayCommand(Copy);
 
-		private DispatcherTimer messageTimer;
+        public DateTime CodeLastExecuted  { get => codeLastExecuted; set => SetProperty(ref codeLastExecuted, value); }
 
-		public CodeEntryContext(CodeEntry entry)
+        private DateTime codeLastExecuted;
+
+
+        private DispatcherTimer codeTimer;
+        private DispatcherTimer messageTimer;
+
+        public CodeEntryContext(CodeEntry entry)
 		{
 			Entry = entry;
-			code = CodeGenerator.Get2FACode(Entry.Info.Secrets);
 
-			messageTimer = new DispatcherTimer
+			if (Entry.Info.Period != 0)
+				CodeInterval = TimeSpan.FromSeconds((double)Entry.Info.Period);
+			else
+                CodeInterval = TimeSpan.FromSeconds(30);
+			
+			GenerateNewCode();
+
+            codeTimer = new DispatcherTimer()
+			{
+				Interval = CodeInterval,
+			};
+			codeTimer.Tick += CodeTimer_Tick;
+			codeTimer.Start();
+
+            messageTimer = new DispatcherTimer
 			{
 				Interval = TimeSpan.FromSeconds(2) 
 			};
@@ -57,8 +78,9 @@ namespace AuthDesk.Models
 
 		public void GenerateNewCode()
 		{
-			Code = CodeGenerator.Get2FACode(Entry.Info.Secrets); 
-		}
+			Code = CodeGenerator.Get2FACode(Entry.Info.Secrets);
+            CodeLastExecuted = DateTime.UtcNow;
+        }
 
 		private void Copy()
 		{
@@ -66,10 +88,25 @@ namespace AuthDesk.Models
 			CopyCodebuttonText = "Copied !";
 			messageTimer.Start();
 		}
+
+		private void CodeTimer_Tick(object sender, EventArgs e)
+		{
+			GenerateNewCode();
+        }
+
 		private void MessageTimer_Tick(object sender, EventArgs e)
 		{
 			CopyCodebuttonText = "Copy";
 			messageTimer.Stop(); // Stop the timer to prevent it from firing again
 		}
-	}
+
+        public void Dispose()
+        {
+            codeTimer.Tick -= CodeTimer_Tick;
+            codeTimer.Stop();
+
+            messageTimer.Tick -= MessageTimer_Tick;
+            messageTimer.Stop();
+        }
+    }
 }

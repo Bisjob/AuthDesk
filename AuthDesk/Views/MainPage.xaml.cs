@@ -11,4 +11,9 @@ public partial class MainPage : Page
         InitializeComponent();
         DataContext = viewModel;
     }
+
+    private void SplitView_PaneClosed(object sender, EventArgs e)
+    {
+        (DataContext as MainViewModel).UnselectEntryCommand.Execute(null);
+    }
 }

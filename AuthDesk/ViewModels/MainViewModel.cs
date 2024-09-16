@@ -8,8 +8,9 @@ using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace AuthDesk.ViewModels;
 
@@ -19,22 +20,61 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
     private readonly INavigationService navigationService;
 	private readonly IJsonImporter jsonImporter;
 	private readonly ICodeEntriesService codeEntriesService;
-	private ICommand navigateToDetailCommand;
 	private ICommand navigateToAddEntryCommand;
 	private ICommand deleteEntryCommand;
+    private ICommand setGroupFilterCommand;
+    private ICommand unselectEntryCommand;
 
-	public ICommand NavigateToDetailCommand 
-        => navigateToDetailCommand ??= new RelayCommand<CodeEntryContext>(NavigateToDetail);
     public ICommand NavigateToAddEntryCommand
         => navigateToAddEntryCommand ??= new RelayCommand(NavigateToAddEntry);
 	public ICommand DeleteEntryCommand
 		=> deleteEntryCommand ??= new RelayCommand<CodeEntryContext>(DeleteEntry);
+    public ICommand SetGroupFilterCommand
+        => setGroupFilterCommand ??= new RelayCommand<string>(SetGroupFilter);
+    public ICommand UnselectEntryCommand
+        => unselectEntryCommand ??= new RelayCommand(UnSelectEntry);
 
-    public ObservableCollection<CodeEntryContext> Source { get; } = [];
+    public ObservableCollection<CodeEntryContext> Entries { get; } = [];
+    public ICollectionView AllEntries => allEntries.View;
 
-	public ObservableCollection<SplitButtonCommandItem> ImportOptions { get; }
+    private CollectionViewSource allEntries { get; set; }
 
-    private readonly DispatcherTimer timer;
+    public ObservableCollection<SplitButtonCommandItem> ImportOptions { get; }
+
+    public CodeEntryContext SelectedEntryCtx
+    {
+        get { return selectedEntryCtx; }
+        set { SetProperty(ref selectedEntryCtx, value); }
+    }
+
+    public ObservableCollection<string> Groups { get; } = [];
+
+    public string FilterName
+    {
+        get => filterName;
+        set
+        {
+            if (value == filterName) return;
+            SetProperty(ref filterName, value);
+            AllEntries.Refresh();
+        }
+    }
+
+    public string SelectedGroup
+    {
+        get => selectedGroup;
+        set
+        {
+            if (value == selectedGroup) return;
+            SetProperty(ref selectedGroup, value);
+            AllEntries.Refresh();
+        }
+    }
+
+    private CodeEntryContext selectedEntryCtx;
+    private string filterName;
+    private string selectedGroup = SelectedGroupEmpty;
+    private const string SelectedGroupEmpty = "Filter by group..";
 
 	public MainViewModel(
         INavigationService navigationService,
@@ -48,17 +88,16 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 
         this.jsonImporter.OnAskForPassword += AskForPassword;
 
+        allEntries = new CollectionViewSource
+        {
+            Source = Entries
+        };
+        allEntries.Filter += ApplyFilter;
+        
         ImportOptions =
         [
             new SplitButtonCommandItem(Resources.MainPageImportAegisJson, new RelayCommand(ImportAegisJson))
         ];
-
-        timer = new DispatcherTimer
-		{
-			Interval = TimeSpan.FromSeconds(30)
-		};
-		timer.Tick += Timer_Tick;
-		timer.Start();
 	}
 
     public void OnNavigatedTo(object parameter)
@@ -69,26 +108,52 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
     public void OnNavigatedFrom()
     {
 	}
-	private void Timer_Tick(object sender, EventArgs e)
-	{
-		foreach (var entry in Source)
-		{
-			entry.GenerateNewCode();
-		}
-	}
 
 	private void RefreshSource()
     {
-        Source.Clear();
+        Entries.Clear();
 		foreach (var item in codeEntriesService.Entries.Entries)
-			Source.Add(new CodeEntryContext(item));
-	}
+            Entries.Add(new CodeEntryContext(item));
 
-    private void NavigateToDetail(CodeEntryContext entry)
+        Groups.Clear();
+        Groups.Add(SelectedGroupEmpty);
+        var groups = Entries.Select(ctx => ctx.Entry.Group).Distinct().ToList();
+        foreach (var group in groups)
+            Groups.Add(group);
+    }
+    void ApplyFilter(object sender, FilterEventArgs e)
     {
-        navigationService.NavigateTo(typeof(MainDetailViewModel).FullName, entry.Id);
-	}
-	private void NavigateToAddEntry()
+        if (e.Item is not CodeEntryContext ctx)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(FilterName) && !ctx.Entry.Name.Contains(FilterName, StringComparison.OrdinalIgnoreCase))
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(SelectedGroup) && SelectedGroup != SelectedGroupEmpty && ctx.Entry.Group != SelectedGroup)
+        {
+            e.Accepted = false;
+            return;
+        }
+
+        e.Accepted = true;
+    }
+
+    private void SetGroupFilter(string group)
+    {
+        SelectedGroup = group;
+    }
+    private void UnSelectEntry()
+    {
+        SelectedEntryCtx = null;
+    }
+
+    private void NavigateToAddEntry()
 	{
 		navigationService.NavigateTo(typeof(AddEntryViewModel).FullName);
 	}
@@ -117,9 +182,22 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 		}
 	}
 
-	private void DeleteEntry(CodeEntryContext entry)
+	private async void DeleteEntry(CodeEntryContext ctx)
 	{
-		codeEntriesService.Entries.Entries.Remove(entry.Entry);
+        var result = await dialogCoordinator.ShowMessageAsync(
+            this, 
+            "Confirm delete", 
+            $"Are you sur you want to delete the entry {ctx.Entry.Issuer}", 
+            MessageDialogStyle.AffirmativeAndNegative,
+            new MetroDialogSettings()
+            {
+                AffirmativeButtonText = Resources.DialogConfirmYesButton,
+                NegativeButtonText = Resources.DialogConfirmNoButton,
+            });
+
+        if (result != MessageDialogResult.Affirmative) return;
+
+        codeEntriesService.Entries.Entries.Remove(ctx.Entry);
 		codeEntriesService.SaveData();
 		RefreshSource();
 	}
@@ -131,9 +209,6 @@ public class MainViewModel : ObservableObject, INavigationAware, IDisposable
 
     public void Dispose()
     {
-        timer.Tick -= Timer_Tick;
-        timer.Stop();
-
         jsonImporter.OnAskForPassword -= AskForPassword;
     }
 }
