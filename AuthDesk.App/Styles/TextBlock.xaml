@@ -39,6 +39,15 @@
         <Setter Property="TextWrapping" Value="NoWrap" />
     </Style>
 
+    <Style x:Key="BadgeStyle"
+           TargetType="{x:Type TextBlock}"
+           BasedOn="{StaticResource BaseTextBlockStyle}">
+        <Setter Property="TextWrapping"
+                Value="NoWrap" />
+        <Setter Property="Margin"
+                Value="{StaticResource SmallLeftTopRightBottomMargin}" />
+    </Style>
+
     <Style x:Key="SmallIconStyle" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource BaseIconStyle}">
         <Setter Property="FontSize" Value="16" />
     </Style>
