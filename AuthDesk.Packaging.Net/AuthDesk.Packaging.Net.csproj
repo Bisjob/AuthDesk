@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AuthDesk\AuthDesk.App.csproj" />
+  </ItemGroup>
+
+  <Target Name="CreateAppPackageFolder" AfterTargets="Publish">
+    <PropertyGroup>
+      <PackageOutputDir>$(MSBuildThisFileDirectory)\Package</PackageOutputDir>
+    </PropertyGroup>
+    <RemoveDir Directories="$(PackageOutputDir)" />
+    <MakeDir Directories="$(PackageOutputDir)" />
+    <Copy SourceFiles="@(PublishOutputFiles)" DestinationFolder="$(PackageOutputDir)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
